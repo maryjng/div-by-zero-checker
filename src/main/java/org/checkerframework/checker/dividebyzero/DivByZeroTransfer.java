@@ -71,7 +71,38 @@ public class DivByZeroTransfer extends CFTransfer {
             Comparison operator,
             AnnotationMirror lhs,
             AnnotationMirror rhs) {
-        // TODO
+
+            //if lhs is set to rhs, return class of rhs
+            if (operator == Comparison.EQ){ 
+                if (rhs instanceof Zero) {
+                    return reflect(Zero.class);
+                }
+                else if (rhs instanceof NotZero) {
+                    return reflect(NotZero.class);
+                }
+            }
+
+            //if rhs is 0 and lhs != 0, lhs is nonzero
+            else if (operator == Comparison.NE) {
+                if (rhs instanceof Zero) {
+                    return reflect(NotZero.class);
+                }
+            }
+
+            //if lhs < 0 then lhs is a (negative) integer
+            else if (operator == Comparison.LT){
+                if (rhs instanceof Zero) {
+                    return reflect(NotZero.class);
+                }
+            }
+            
+            //if lhs > 0 then lhs is a (positive) integer
+            else if (operator == Comparison.GT){
+                if (rhs instanceof Zero) {
+                    return reflect(NotZero.class);
+                }
+            }
+
         return lhs;
     }
 
@@ -93,7 +124,80 @@ public class DivByZeroTransfer extends CFTransfer {
             BinaryOperator operator,
             AnnotationMirror lhs,
             AnnotationMirror rhs) {
-        // TODO
+
+        if (operator == BinaryOperator.PLUS) {
+            // return bottom if any side is bottom
+            if (lhs instanceof Bottom | rhs instanceof Bottom) {
+                return bottom();
+            }
+
+            // zero + zero = zero
+            if (lhs instanceof Zero) {
+                if (rhs instanceof Zero) {
+                    return reflect(Zero.class);
+                }
+                // zero + notzero = notzero
+                else if (rhs instanceof NotZero) {
+                    return reflect(NotZero.class);
+                }
+            }
+            // notzero + notzero = notzero
+            else if (lhs instanceof NotZero) {
+                if (rhs instanceof Zero) {
+                    return reflect(NotZero.class);
+                }
+            }
+        }
+
+        else if (operator == BinaryOperator.TIMES) {
+            // return bottom if any side is bottom
+            if (lhs instanceof Bottom | rhs instanceof Bottom) {
+                return bottom();
+            }
+
+            //return zero if lhs is zero (covers rhs as top, zero, notzero)
+            else if (lhs instanceof Zero) {
+                return reflect(Zero.class);
+            }
+            //return zero if rhs is zero (covers lhs as top, zero, notzero)
+            else if (rhs instanceof Zero) {
+                return reflect(Zero.class);
+            }
+
+            //notzero * notzero = notzero
+            else if (lhs instanceof NotZero) {
+                if (rhs instanceof NotZero) {
+                    return reflect(NotZero.class);
+                }
+            }           
+        }
+
+        else if (operator == BinaryOperator.DIVIDE) {
+            //always return bottom if any side has bottom
+            if (lhs instanceof Bottom | rhs instanceof Bottom) {
+                return bottom();
+            }
+
+            //always return bottom if rhs is zero
+            if (rhs instanceof Zero) {
+                return bottom();
+            }
+
+            //zero / notzero = zero
+            if (lhs instanceof Zero) {
+                if (rhs instanceof NotZero) {
+                    return reflect(Zero.class);
+                }
+            }
+
+            //notzero / notzero = notzero
+            if (lhs instanceof NotZero) {
+                if (rhs instanceof NotZero) {
+                    return reflect(NotZero.class);
+                }
+            }
+        }
+
         return top();
     }
 

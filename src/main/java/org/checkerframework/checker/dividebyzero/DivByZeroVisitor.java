@@ -6,6 +6,8 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import javax.lang.model.type.TypeKind;
 import java.lang.annotation.Annotation;
 import com.sun.source.tree.*;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
+
 
 import java.util.Set;
 import java.util.EnumSet;
@@ -29,7 +31,10 @@ public class DivByZeroVisitor extends BaseTypeVisitor<DivByZeroAnnotatedTypeFact
      */
     private boolean errorAt(BinaryTree node) {
         // A BinaryTree can represent any binary operator, including + or -.
-        // TODO
+
+        if (hasAnnotation(node.getRightOperand(), Zero.class)) {
+            return true;
+        }
         return false;
     }
 
@@ -42,7 +47,10 @@ public class DivByZeroVisitor extends BaseTypeVisitor<DivByZeroAnnotatedTypeFact
     private boolean errorAt(CompoundAssignmentTree node) {
         // A CompoundAssignmentTree represents any binary operator combined with an assignment,
         // such as "x += 10".
-        // TODO
+        if (hasAnnotation(node.getExpression(), Zero.class)) {
+            return true;
+        }
+
         return false;
     }
 
